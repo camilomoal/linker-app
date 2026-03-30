@@ -1,223 +1,263 @@
 'use client'
 
-import { useState, useMemo } from 'react'
-import { useRouter } from 'next/navigation'
+import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
-
-type Interest = { topic: string; event_id: string }
-type EventHistory = { event_id: string; attended: boolean; role_at_event: string | null }
+import { useRouter } from 'next/navigation'
 
 type Profile = {
   id: string
-  full_name: string
+  nombre: string
   email: string
-  company: string
-  role: string
+  cargo: string
+  empresa: string
   sector: string
-  city: string | null
   created_at: string
-  interests: Interest[]
-  event_history: EventHistory[]
-}
-
-type Event = {
-  id: string
-  name: string
-  city: string
-  date: string
 }
 
 type Props = {
-  event: Event | null
   profiles: Profile[]
-  matchesCount: number
-  adminEmail: string
+  totalCount: number
 }
 
-function getUniqueSectors(profiles: Profile[]): string[] {
-  const sectors = profiles.map((p) => p.sector).filter(Boolean)
-  return [...new Set(sectors)].sort()
+function NavItem({
+  icon,
+  label,
+  active,
+}: {
+  icon: string
+  label: string
+  active?: boolean
+}) {
+  return (
+    <div
+      className={`
+        flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-sm cursor-pointer transition-colors
+        ${active
+          ? 'bg-brand-primary/15 text-brand-primary'
+          : 'text-brand-muted hover:bg-brand-surface hover:text-white'}
+      `}
+    >
+      <span className="text-sm w-4 text-center">{icon}</span>
+      {label}
+    </div>
+  )
 }
 
-export default function DashboardClient({ event, profiles, matchesCount, adminEmail }: Props) {
+export default function DashboardClient({ profiles, totalCount }: Props) {
   const [search, setSearch] = useState('')
-  const [sectorFilter, setSectorFilter] = useState('todos')
-  const [loggingOut, setLoggingOut] = useState(false)
+  const [sector, setSector] = useState('')
   const router = useRouter()
   const supabase = createClient()
 
-  const filtered = useMemo(() => {
-    return profiles.filter((p) => {
-      const matchesSearch =
-        search === '' ||
-        p.full_name?.toLowerCase().includes(search.toLowerCase()) ||
-        p.company?.toLowerCase().includes(search.toLowerCase()) ||
-        p.role?.toLowerCase().includes(search.toLowerCase())
-      const matchesSector = sectorFilter === 'todos' || p.sector === sectorFilter
-      return matchesSearch && matchesSector
-    })
-  }, [profiles, search, sectorFilter])
+  const sectores = Array.from(new Set(profiles.map(p => p.sector))).filter(Boolean)
 
-  const sectors = getUniqueSectors(profiles)
+  const filtered = profiles.filter(p => {
+    const matchSearch =
+      p.nombre?.toLowerCase().includes(search.toLowerCase()) ||
+      p.email?.toLowerCase().includes(search.toLowerCase()) ||
+      p.empresa?.toLowerCase().includes(search.toLowerCase())
+    const matchSector = sector === '' || p.sector === sector
+    return matchSearch && matchSector
+  })
 
-  async function handleLogout() {
-    setLoggingOut(true)
+  const handleLogout = async () => {
     await supabase.auth.signOut()
     router.push('/login')
-    router.refresh()
   }
 
-  function formatDate(dateString: string) {
-    return new Date(dateString).toLocaleDateString('es-CO', {
-      day: 'numeric',
-      month: 'short',
-      hour: '2-digit',
-      minute: '2-digit',
-    })
-  }
+  // Stats
+  const empresasUnicas = new Set(profiles.map(p => p.empresa)).size
+  const sectorTop = sectores.reduce(
+    (acc, s) => {
+      const count = profiles.filter(p => p.sector === s).length
+      return count > acc.count ? { name: s, count } : acc
+    },
+    { name: '', count: 0 }
+  )
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white">
-      <header className="border-b border-slate-800 px-6 py-4">
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-7 h-7 rounded-lg bg-cyan-400 flex items-center justify-center">
-              <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
-                <circle cx="4" cy="4" r="2" fill="#080D1A" />
-                <circle cx="12" cy="4" r="2" fill="#080D1A" />
-                <circle cx="4" cy="12" r="2" fill="#080D1A" />
-                <circle cx="12" cy="12" r="2" fill="#080D1A" />
-                <line x1="4" y1="4" x2="12" y2="12" stroke="#080D1A" strokeWidth="1.5" />
-                <line x1="12" y1="4" x2="4" y2="12" stroke="#080D1A" strokeWidth="1.5" />
-              </svg>
+    <div className="flex min-h-screen bg-brand-bg">
+
+      {/* ── Sidebar ── */}
+      <aside className="w-56 min-w-56 bg-brand-black border-r border-brand-border flex flex-col">
+
+        {/* Logo */}
+        <div className="flex items-center gap-2.5 px-5 py-5 border-b border-brand-border">
+          <div className="w-8 h-8 bg-brand-primary rounded-lg flex items-center justify-center flex-shrink-0">
+            <span className="text-white font-bold text-[10px]">3GO</span>
+          </div>
+          <div>
+            <div className="text-white font-bold text-sm leading-none">
+              <span className="text-brand-primary">3GO</span>Video
             </div>
-            <span className="font-semibold text-white">Linker</span>
-            {event && (
-              <>
-                <span className="text-[#2A3A52]">/</span>
-                <span className="text-[#8899AA] text-sm">{event.name}</span>
-              </>
-            )}
-          </div>
-          <div className="flex items-center gap-4">
-            <span className="text-slate-400 text-xs hidden sm:block">{adminEmail}</span>
-            <button
-              onClick={handleLogout}
-              disabled={loggingOut}
-              className="text-slate-400 hover:text-white text-sm transition-colors"
-            >
-              {loggingOut ? 'Saliendo...' : 'Cerrar sesión'}
-            </button>
+            <div className="text-brand-muted text-[10px] mt-0.5">Linker Admin</div>
           </div>
         </div>
-      </header>
 
-      <main className="max-w-7xl mx-auto px-6 py-8">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-          <StatCard label="Asistentes registrados" value={profiles.length} accent="#00E5CC" />
-          <StatCard label="Matches generados" value={matchesCount} accent="#F59E0B" />
-          <StatCard label="Sectores representados" value={sectors.length} accent="#8B5CF6" />
-          <StatCard label="Con historial C5.0" value={profiles.filter((p) => p.event_history?.length > 0).length} accent="#10B981" />
+        {/* Nav */}
+        <nav className="flex-1 px-3 py-4 space-y-0.5">
+          <p className="text-brand-muted text-[10px] uppercase tracking-widest px-2 pb-2">
+            Evento
+          </p>
+          <NavItem icon="⊡" label="Inicio" active />
+          <NavItem icon="◎" label="Asistentes" />
+          <NavItem icon="⬡" label="Matches" />
+          <p className="text-brand-muted text-[10px] uppercase tracking-widest px-2 pt-4 pb-2">
+            Sistema
+          </p>
+          <NavItem icon="◈" label="Configuración" />
+          <NavItem icon="◷" label="Reportes" />
+        </nav>
+
+        {/* Footer usuario */}
+        <div className="px-4 py-4 border-t border-brand-border space-y-3">
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-full bg-brand-primary flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
+              CA
+            </div>
+            <div>
+              <p className="text-white text-xs font-medium leading-none">Camilo</p>
+              <p className="text-brand-muted text-[10px] mt-0.5">Admin Principal</p>
+            </div>
+          </div>
+          <button
+            onClick={handleLogout}
+            className="w-full text-left text-brand-muted text-xs hover:text-white transition-colors px-1"
+          >
+            Cerrar sesión →
+          </button>
         </div>
+      </aside>
 
-        <div className="flex flex-col sm:flex-row gap-3 mb-6">
-          <div className="relative flex-1">
-            <svg className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <circle cx="11" cy="11" r="8" />
-              <path d="m21 21-4.35-4.35" />
-            </svg>
+      {/* ── Main ── */}
+      <div className="flex-1 flex flex-col min-w-0">
+
+        {/* Topbar */}
+        <header className="h-14 bg-brand-card border-b border-gray-200 flex items-center justify-between px-6 flex-shrink-0">
+          <h1 className="text-gray-900 font-semibold text-base">Panel de Control</h1>
+          <div className="flex items-center gap-2 bg-brand-primary/10 border border-brand-primary/25 rounded-full px-3 py-1.5">
+            <div className="w-1.5 h-1.5 rounded-full bg-brand-primary" />
+            <span className="text-[#1670A0] text-xs font-medium">
+              Colombia 5.0 · Santander
+            </span>
+          </div>
+        </header>
+
+        <main className="flex-1 p-6 space-y-6 overflow-auto">
+
+          {/* Stats */}
+          <div className="grid grid-cols-3 gap-4">
+            <div className="bg-brand-card border border-gray-200 border-l-4 border-l-brand-primary rounded-xl p-4">
+              <p className="text-brand-muted text-[11px] uppercase tracking-wider mb-1">
+                Asistentes registrados
+              </p>
+              <p className="text-gray-900 text-3xl font-bold">{totalCount}</p>
+              <p className="text-brand-primary text-xs mt-1">Total del evento</p>
+            </div>
+            <div className="bg-brand-card border border-gray-200 rounded-xl p-4">
+              <p className="text-brand-muted text-[11px] uppercase tracking-wider mb-1">
+                Empresas presentes
+              </p>
+              <p className="text-gray-900 text-3xl font-bold">{empresasUnicas}</p>
+              <p className="text-brand-muted text-xs mt-1">Organizaciones únicas</p>
+            </div>
+            <div className="bg-brand-card border border-gray-200 rounded-xl p-4">
+              <p className="text-brand-muted text-[11px] uppercase tracking-wider mb-1">
+                Sector líder
+              </p>
+              <p className="text-gray-900 text-2xl font-bold truncate">{sectorTop.name || '—'}</p>
+              <p className="text-brand-muted text-xs mt-1">{sectorTop.count} asistentes</p>
+            </div>
+          </div>
+
+          {/* Filtros */}
+          <div className="flex gap-3">
             <input
               type="text"
+              placeholder="Buscar por nombre, email o empresa..."
               value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Buscar por nombre, empresa o cargo..."
-              className="w-full bg-slate-900 border border-slate-800 rounded-lg pl-9 pr-4 py-2.5 text-sm text-white placeholder:text-slate-500 focus:outline-none focus:border-cyan-400 transition-colors"
+              onChange={e => setSearch(e.target.value)}
+              className="flex-1 bg-brand-card border border-gray-200 rounded-xl px-4 py-2.5 text-gray-900 text-sm placeholder:text-brand-muted focus:outline-none focus:border-brand-primary transition-colors"
             />
-          </div>
-          <select
-            value={sectorFilter}
-            onChange={(e) => setSectorFilter(e.target.value)}
-            className="bg-slate-900 border border-slate-800 rounded-lg px-4 py-2.5 text-sm text-white focus:outline-none focus:border-cyan-400 transition-colors min-w-[180px]"
-          >
-            <option value="todos">Todos los sectores</option>
-            {sectors.map((s) => (
-              <option key={s} value={s}>{s}</option>
-            ))}
-          </select>
-        </div>
-
-        {(search || sectorFilter !== 'todos') && (
-          <p className="text-slate-400 text-sm mb-4">
-            Mostrando <span className="text-cyan-400 font-medium">{filtered.length}</span> de {profiles.length} asistentes
-          </p>
-        )}
-
-        {filtered.length === 0 ? (
-          <div className="bg-slate-900 border border-slate-800 rounded-xl p-12 text-center">
-            <p className="text-slate-400 text-sm">
-              {profiles.length === 0 ? 'Aún no hay asistentes registrados.' : 'Ningún asistente coincide con la búsqueda.'}
-            </p>
-          </div>
-        ) : (
-          <div className="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden">
-            <div className="hidden md:grid grid-cols-[2fr_2fr_1fr_1fr_auto] gap-4 px-6 py-3 border-b border-slate-800">
-              {['Nombre', 'Empresa / Cargo', 'Sector', 'Registrado', ''].map((h) => (
-                <span key={h} className="text-slate-400 text-xs font-medium uppercase tracking-wider">{h}</span>
+            <select
+              value={sector}
+              onChange={e => setSector(e.target.value)}
+              className="bg-brand-card border border-gray-200 rounded-xl px-4 py-2.5 text-gray-900 text-sm focus:outline-none focus:border-brand-primary transition-colors"
+            >
+              <option value="">Todos los sectores</option>
+              {sectores.map(s => (
+                <option key={s} value={s}>{s}</option>
               ))}
-            </div>
-            <div className="divide-y divide-slate-800">
-              {filtered.map((profile) => (
-                <AttendeeRow key={profile.id} profile={profile} formatDate={formatDate} />
-              ))}
-            </div>
+            </select>
           </div>
-        )}
-      </main>
+
+          {/* Tabla */}
+          <div className="bg-brand-card border border-gray-200 rounded-xl overflow-hidden">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-gray-100 bg-brand-bg">
+                  <th className="text-left px-5 py-3 text-brand-muted text-[11px] uppercase tracking-wider font-medium">
+                    Nombre
+                  </th>
+                  <th className="text-left px-5 py-3 text-brand-muted text-[11px] uppercase tracking-wider font-medium">
+                    Cargo
+                  </th>
+                  <th className="text-left px-5 py-3 text-brand-muted text-[11px] uppercase tracking-wider font-medium">
+                    Empresa
+                  </th>
+                  <th className="text-left px-5 py-3 text-brand-muted text-[11px] uppercase tracking-wider font-medium">
+                    Sector
+                  </th>
+                  <th className="text-left px-5 py-3 text-brand-muted text-[11px] uppercase tracking-wider font-medium">
+                    Registro
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {filtered.length === 0 ? (
+                  <tr>
+                    <td colSpan={5} className="text-center py-12 text-brand-muted">
+                      No hay asistentes que coincidan con la búsqueda
+                    </td>
+                  </tr>
+                ) : (
+                  filtered.map((p, i) => (
+                    <tr
+                      key={p.id}
+                      className={`border-b border-gray-50 hover:bg-brand-bg transition-colors ${i % 2 === 0 ? '' : 'bg-gray-50/50'}`}
+                    >
+                      <td className="px-5 py-3">
+                        <div>
+                          <p className="text-gray-900 font-medium">{p.nombre || '—'}</p>
+                          <p className="text-brand-muted text-[11px]">{p.email}</p>
+                        </div>
+                      </td>
+                      <td className="px-5 py-3 text-gray-700">{p.cargo || '—'}</td>
+                      <td className="px-5 py-3 text-gray-700">{p.empresa || '—'}</td>
+                      <td className="px-5 py-3">
+                        {p.sector ? (
+                          <span className="bg-brand-primary/10 text-[#1670A0] text-[11px] font-medium px-2 py-0.5 rounded-full">
+                            {p.sector}
+                          </span>
+                        ) : '—'}
+                      </td>
+                      <td className="px-5 py-3 text-brand-muted text-[11px]">
+                        {p.created_at
+                          ? new Date(p.created_at).toLocaleDateString('es-CO', {
+                              day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit'
+                            })
+                          : '—'}
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+
+        </main>
+      </div>
     </div>
   )
 }
 
-function StatCard({ label, value, accent }: { label: string; value: number; accent: string }) {
-  return (
-    <div className="bg-slate-900 border border-slate-800 rounded-xl p-4">
-      <div className="text-3xl font-bold mb-1 tabular-nums" style={{ color: accent }}>{value}</div>
-      <div className="text-slate-400 text-xs leading-tight">{label}</div>
-    </div>
-  )
-}
-
-function AttendeeRow({ profile, formatDate }: { profile: Profile; formatDate: (d: string) => string }) {
-  const hasHistory = profile.event_history?.length > 0
-  const interestCount = profile.interests?.length || 0
-
-  return (
-    <div className="grid md:grid-cols-[2fr_2fr_1fr_1fr_auto] gap-4 px-6 py-4 items-center hover:bg-slate-800/40 transition-colors">
-      <div>
-        <div className="flex items-center gap-2">
-          <span className="text-white text-sm font-medium">{profile.full_name}</span>
-          {hasHistory && (
-            <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-              C5.0 vet
-            </span>
-          )}
-        </div>
-        <div className="text-slate-400 text-xs mt-0.5 truncate">{profile.email}</div>
-      </div>
-      <div>
-        <div className="text-slate-200 text-sm truncate">{profile.company}</div>
-        <div className="text-slate-400 text-xs mt-0.5 truncate">{profile.role}</div>
-      </div>
-      <div>
-        <span className="inline-block text-xs px-2 py-1 rounded-md bg-slate-950 border border-slate-800 text-slate-300 truncate max-w-full">
-          {profile.sector || '—'}
-        </span>
-      </div>
-      <div className="text-slate-400 text-xs">{formatDate(profile.created_at)}</div>
-      <div>
-        {interestCount > 0 && (
-          <span className="text-cyan-400 text-xs">{interestCount} {interestCount === 1 ? 'interés' : 'intereses'}</span>
-        )}
-      </div>
-    </div>
-  )
-}

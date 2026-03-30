@@ -10,12 +10,6 @@ export default async function DashboardPage() {
     redirect('/login')
   }
 
-  const { data: event } = await supabase
-    .from('events')
-    .select('*')
-    .eq('slug', 'colombia-5-0-santander-2025')
-    .single()
-
   const { data: profiles } = await supabase
     .from('profiles')
     .select(`
@@ -39,16 +33,18 @@ export default async function DashboardPage() {
     `)
     .order('created_at', { ascending: false })
 
-  const { count: matchesCount } = await supabase
-    .from('matches')
-    .select('*', { count: 'exact', head: true })
+  const totalCount = profiles?.length ?? 0
 
-  return (
-    <DashboardClient
-      event={event}
-      profiles={profiles || []}
-      matchesCount={matchesCount || 0}
-      adminEmail={session.user.email || ''}
-    />
-  )
+  const mappedProfiles =
+    (profiles || []).map((p) => ({
+      id: p.id,
+      nombre: p.full_name,
+      email: p.email,
+      cargo: p.role,
+      empresa: p.company,
+      sector: p.sector,
+      created_at: p.created_at,
+    }))
+
+  return <DashboardClient profiles={mappedProfiles} totalCount={totalCount} />
 }
