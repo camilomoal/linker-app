@@ -77,11 +77,11 @@ export default function DashboardClient({ event, profiles, matchesCount, adminEm
   }
 
   return (
-    <div className="min-h-screen bg-[#080D1A] text-white">
-      <header className="border-b border-[#1E2D4A] px-6 py-4">
+    <div className="min-h-screen bg-slate-950 text-white">
+      <header className="border-b border-slate-800 px-6 py-4">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-7 h-7 rounded-lg bg-[#00E5CC] flex items-center justify-center">
+            <div className="w-7 h-7 rounded-lg bg-cyan-400 flex items-center justify-center">
               <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
                 <circle cx="4" cy="4" r="2" fill="#080D1A" />
                 <circle cx="12" cy="4" r="2" fill="#080D1A" />
@@ -100,11 +100,11 @@ export default function DashboardClient({ event, profiles, matchesCount, adminEm
             )}
           </div>
           <div className="flex items-center gap-4">
-            <span className="text-[#4A5568] text-xs hidden sm:block">{adminEmail}</span>
+            <span className="text-slate-400 text-xs hidden sm:block">{adminEmail}</span>
             <button
               onClick={handleLogout}
               disabled={loggingOut}
-              className="text-[#8899AA] hover:text-white text-sm transition-colors"
+              className="text-slate-400 hover:text-white text-sm transition-colors"
             >
               {loggingOut ? 'Saliendo...' : 'Cerrar sesión'}
             </button>
@@ -122,7 +122,7 @@ export default function DashboardClient({ event, profiles, matchesCount, adminEm
 
         <div className="flex flex-col sm:flex-row gap-3 mb-6">
           <div className="relative flex-1">
-            <svg className="absolute left-3 top-1/2 -translate-y-1/2 text-[#4A5568]" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <svg className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <circle cx="11" cy="11" r="8" />
               <path d="m21 21-4.35-4.35" />
             </svg>
@@ -131,13 +131,13 @@ export default function DashboardClient({ event, profiles, matchesCount, adminEm
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Buscar por nombre, empresa o cargo..."
-              className="w-full bg-[#0F1629] border border-[#1E2D4A] rounded-lg pl-9 pr-4 py-2.5 text-sm text-white placeholder:text-[#2A3A52] focus:outline-none focus:border-[#00E5CC] transition-colors"
+              className="w-full bg-slate-900 border border-slate-800 rounded-lg pl-9 pr-4 py-2.5 text-sm text-white placeholder:text-slate-500 focus:outline-none focus:border-cyan-400 transition-colors"
             />
           </div>
           <select
             value={sectorFilter}
             onChange={(e) => setSectorFilter(e.target.value)}
-            className="bg-[#0F1629] border border-[#1E2D4A] rounded-lg px-4 py-2.5 text-sm text-white focus:outline-none focus:border-[#00E5CC] transition-colors min-w-[180px]"
+            className="bg-slate-900 border border-slate-800 rounded-lg px-4 py-2.5 text-sm text-white focus:outline-none focus:border-cyan-400 transition-colors min-w-[180px]"
           >
             <option value="todos">Todos los sectores</option>
             {sectors.map((s) => (
@@ -147,25 +147,25 @@ export default function DashboardClient({ event, profiles, matchesCount, adminEm
         </div>
 
         {(search || sectorFilter !== 'todos') && (
-          <p className="text-[#4A5568] text-sm mb-4">
-            Mostrando <span className="text-[#00E5CC] font-medium">{filtered.length}</span> de {profiles.length} asistentes
+          <p className="text-slate-400 text-sm mb-4">
+            Mostrando <span className="text-cyan-400 font-medium">{filtered.length}</span> de {profiles.length} asistentes
           </p>
         )}
 
         {filtered.length === 0 ? (
-          <div className="bg-[#0F1629] border border-[#1E2D4A] rounded-xl p-12 text-center">
-            <p className="text-[#4A5568] text-sm">
+          <div className="bg-slate-900 border border-slate-800 rounded-xl p-12 text-center">
+            <p className="text-slate-400 text-sm">
               {profiles.length === 0 ? 'Aún no hay asistentes registrados.' : 'Ningún asistente coincide con la búsqueda.'}
             </p>
           </div>
         ) : (
-          <div className="bg-[#0F1629] border border-[#1E2D4A] rounded-xl overflow-hidden">
-            <div className="hidden md:grid grid-cols-[2fr_2fr_1fr_1fr_auto] gap-4 px-6 py-3 border-b border-[#1E2D4A]">
+          <div className="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden">
+            <div className="hidden md:grid grid-cols-[2fr_2fr_1fr_1fr_auto] gap-4 px-6 py-3 border-b border-slate-800">
               {['Nombre', 'Empresa / Cargo', 'Sector', 'Registrado', ''].map((h) => (
-                <span key={h} className="text-[#4A5568] text-xs font-medium uppercase tracking-wider">{h}</span>
+                <span key={h} className="text-slate-400 text-xs font-medium uppercase tracking-wider">{h}</span>
               ))}
             </div>
-            <div className="divide-y divide-[#1E2D4A]">
+            <div className="divide-y divide-slate-800">
               {filtered.map((profile) => (
                 <AttendeeRow key={profile.id} profile={profile} formatDate={formatDate} />
               ))}
@@ -179,9 +179,9 @@ export default function DashboardClient({ event, profiles, matchesCount, adminEm
 
 function StatCard({ label, value, accent }: { label: string; value: number; accent: string }) {
   return (
-    <div className="bg-[#0F1629] border border-[#1E2D4A] rounded-xl p-4">
+    <div className="bg-slate-900 border border-slate-800 rounded-xl p-4">
       <div className="text-3xl font-bold mb-1 tabular-nums" style={{ color: accent }}>{value}</div>
-      <div className="text-[#4A5568] text-xs leading-tight">{label}</div>
+      <div className="text-slate-400 text-xs leading-tight">{label}</div>
     </div>
   )
 }
@@ -191,7 +191,7 @@ function AttendeeRow({ profile, formatDate }: { profile: Profile; formatDate: (d
   const interestCount = profile.interests?.length || 0
 
   return (
-    <div className="grid md:grid-cols-[2fr_2fr_1fr_1fr_auto] gap-4 px-6 py-4 items-center hover:bg-[#0D1525] transition-colors">
+    <div className="grid md:grid-cols-[2fr_2fr_1fr_1fr_auto] gap-4 px-6 py-4 items-center hover:bg-slate-800/40 transition-colors">
       <div>
         <div className="flex items-center gap-2">
           <span className="text-white text-sm font-medium">{profile.full_name}</span>
@@ -201,21 +201,21 @@ function AttendeeRow({ profile, formatDate }: { profile: Profile; formatDate: (d
             </span>
           )}
         </div>
-        <div className="text-[#4A5568] text-xs mt-0.5 truncate">{profile.email}</div>
+        <div className="text-slate-400 text-xs mt-0.5 truncate">{profile.email}</div>
       </div>
       <div>
-        <div className="text-[#C8D8E8] text-sm truncate">{profile.company}</div>
-        <div className="text-[#4A5568] text-xs mt-0.5 truncate">{profile.role}</div>
+        <div className="text-slate-200 text-sm truncate">{profile.company}</div>
+        <div className="text-slate-400 text-xs mt-0.5 truncate">{profile.role}</div>
       </div>
       <div>
-        <span className="inline-block text-xs px-2 py-1 rounded-md bg-[#080D1A] border border-[#1E2D4A] text-[#8899AA] truncate max-w-full">
+        <span className="inline-block text-xs px-2 py-1 rounded-md bg-slate-950 border border-slate-800 text-slate-300 truncate max-w-full">
           {profile.sector || '—'}
         </span>
       </div>
-      <div className="text-[#4A5568] text-xs">{formatDate(profile.created_at)}</div>
+      <div className="text-slate-400 text-xs">{formatDate(profile.created_at)}</div>
       <div>
         {interestCount > 0 && (
-          <span className="text-[#00E5CC] text-xs">{interestCount} {interestCount === 1 ? 'interés' : 'intereses'}</span>
+          <span className="text-cyan-400 text-xs">{interestCount} {interestCount === 1 ? 'interés' : 'intereses'}</span>
         )}
       </div>
     </div>
