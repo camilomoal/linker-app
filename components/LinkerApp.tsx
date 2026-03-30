@@ -55,8 +55,8 @@ Devuelve SOLO JSON top ${Math.min(5, others.length)} matches:
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ prompt }),
     })
-    const data = await res.json()
-    return (data.matches || []).map((m: any) => ({ ...m, profile: others[m.index] })).filter((m: any) => m.profile)
+    const data = await res.json() as { matches: Array<{ index: number; score: number; reason: string; message: string; opportunity: string }> }
+    return (data.matches || []).map((m) => ({ ...m, profile: others[m.index] })).filter((m) => m.profile)
   } catch { return [] }
 }
 
@@ -265,8 +265,8 @@ function ProfileForm({ existing, eventId, onSave }: { existing: Profile | null, 
               : <div style={{ textAlign: 'center' }}><div style={{ fontSize: 28 }}>📷</div><div style={{ fontSize: 10, color: C.muted, marginTop: 4 }}>Subir foto</div></div>
             }
           </div>
-          <input id="photo-inp" type="file" accept="image/*" capture="user" style={{ display: 'none' }}
-            onChange={async e => {
+          <input id="photo-inp" type="file" accept="image/*" style={{ display: 'none' }}
+            onChange={async (e: React.ChangeEvent<HTMLInputElement>) => {
               const file = e.target.files?.[0]
               if (!file) return
               u('photoFile', file)
