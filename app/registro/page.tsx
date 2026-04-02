@@ -141,7 +141,6 @@ export default function RegistroPage() {
         const { error: interestsError } = await supabase
           .from('interests')
           .insert(allInterests)
-        if (interestsError) console.warn('Interests insert failed:', interestsError)
       }
 
       setStep('success')
