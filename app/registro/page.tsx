@@ -3,7 +3,6 @@
 import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 
-// ─── Tipos ───────────────────────────────────────────────────────────────────
 type Step = 1 | 2 | 3 | 'success' | 'error'
 
 interface FormData {
@@ -19,7 +18,6 @@ interface FormData {
   ofreciendo: string[]
 }
 
-// ─── Opciones de intereses ────────────────────────────────────────────────────
 const BUSCANDO_OPTIONS = [
   'Clientes potenciales',
   'Aliados estratégicos',
@@ -57,7 +55,6 @@ const SECTORES = [
   'Otro',
 ]
 
-// ─── Componente principal ────────────────────────────────────────────────────
 export default function RegistroPage() {
   const supabase = createClient()
   const eventId = process.env.NEXT_PUBLIC_DEFAULT_EVENT_ID || ''
@@ -79,7 +76,6 @@ export default function RegistroPage() {
     ofreciendo: [],
   })
 
-  // ─── Helpers ───────────────────────────────────────────────────────────────
   const update = (field: keyof FormData, value: string) =>
     setForm(prev => ({ ...prev, [field]: value }))
 
@@ -103,7 +99,6 @@ export default function RegistroPage() {
 
   const isStep2Valid = form.sector !== ''
 
-  // ─── Submit ────────────────────────────────────────────────────────────────
   const handleSubmit = async () => {
     setLoading(true)
     setErrorMsg('')
@@ -128,28 +123,26 @@ export default function RegistroPage() {
 
       if (profileError) throw profileError
 
-    // 2. Insertar intereses — una fila por cada tag seleccionado
-const allInterests = [
-    ...form.buscando.map(tag => ({
-      profile_id: profileData.id,
-      interest_tag: tag,
-      descripcion: 'buscando',
-    })),
-    ...form.ofreciendo.map(tag => ({
-      profile_id: profileData.id,
-      interest_tag: tag,
-      descripcion: 'ofreciendo',
-    })),
-  ]
-  
-  if (allInterests.length > 0) {
-    const { error: interestsError } = await supabase
-      .from('interests')
-      .insert(allInterests)
-    if (interestsError) console.warn('Interests insert failed:', interestsError)
-  }
-      // Si falla interests, no bloqueamos — el perfil ya quedó guardado
-      if (interestsError) console.warn('Interests insert failed:', interestsError)
+      // 2. Insertar intereses — una fila por cada tag seleccionado
+      const allInterests = [
+        ...form.buscando.map(tag => ({
+          profile_id: profileData.id,
+          interest_tag: tag,
+          descripcion: 'buscando',
+        })),
+        ...form.ofreciendo.map(tag => ({
+          profile_id: profileData.id,
+          interest_tag: tag,
+          descripcion: 'ofreciendo',
+        })),
+      ]
+
+      if (allInterests.length > 0) {
+        const { error: interestsError } = await supabase
+          .from('interests')
+          .insert(allInterests)
+        if (interestsError) console.warn('Interests insert failed:', interestsError)
+      }
 
       setStep('success')
     } catch (err: any) {
@@ -165,20 +158,16 @@ const allInterests = [
     }
   }
 
-  // ─── Render ────────────────────────────────────────────────────────────────
   return (
     <div className="min-h-screen bg-brand-black flex flex-col items-center justify-start px-4 py-10">
 
-      {/* Logo */}
       <div className="mb-8 text-center">
         <span className="text-2xl font-bold text-brand-primary tracking-tight">Linker</span>
         <p className="text-brand-muted text-sm mt-1">Colombia 5.0 · Santander</p>
       </div>
 
-      {/* Card */}
       <div className="w-full max-w-md bg-brand-surface border border-brand-border rounded-2xl p-6 shadow-xl">
 
-        {/* ── SUCCESS ────────────────────────────────────────── */}
         {step === 'success' && (
           <div className="flex flex-col items-center text-center py-6 gap-4">
             <div className="text-5xl">🎉</div>
@@ -194,7 +183,6 @@ const allInterests = [
           </div>
         )}
 
-        {/* ── ERROR ──────────────────────────────────────────── */}
         {step === 'error' && (
           <div className="flex flex-col items-center text-center py-6 gap-4">
             <div className="text-5xl">⚠️</div>
@@ -209,7 +197,6 @@ const allInterests = [
           </div>
         )}
 
-        {/* ── STEP 1: Info básica ─────────────────────────────── */}
         {step === 1 && (
           <>
             <StepHeader step={1} total={3} title="¿Quién eres?" />
@@ -233,13 +220,10 @@ const allInterests = [
           </>
         )}
 
-        {/* ── STEP 2: Perfil profesional ──────────────────────── */}
         {step === 2 && (
           <>
             <StepHeader step={2} total={3} title="Tu perfil profesional" />
             <div className="flex flex-col gap-4 mt-6">
-
-              {/* Sector */}
               <div>
                 <label className="text-brand-muted text-xs font-medium uppercase tracking-wide mb-1.5 block">
                   Sector *
@@ -261,7 +245,6 @@ const allInterests = [
               <Field label="LinkedIn (opcional)" value={form.linkedin_url}
                 onChange={v => update('linkedin_url', v)} placeholder="linkedin.com/in/tu-perfil" />
 
-              {/* Bio corta */}
               <div>
                 <label className="text-brand-muted text-xs font-medium uppercase tracking-wide mb-1.5 block">
                   Bio corta (opcional)
@@ -296,7 +279,6 @@ const allInterests = [
           </>
         )}
 
-        {/* ── STEP 3: Intereses ───────────────────────────────── */}
         {step === 3 && (
           <>
             <StepHeader step={3} total={3} title="¿Qué buscas?" />
@@ -341,7 +323,6 @@ const allInterests = [
         )}
       </div>
 
-      {/* Footer */}
       <p className="text-brand-muted text-xs mt-6 text-center">
         Colombia 5.0 · Powered by Linker
       </p>
@@ -349,12 +330,9 @@ const allInterests = [
   )
 }
 
-// ─── Sub-componentes ─────────────────────────────────────────────────────────
-
 function StepHeader({ step, total, title }: { step: number; total: number; title: string }) {
   return (
     <div>
-      {/* Progress bar */}
       <div className="flex gap-1.5 mb-4">
         {Array.from({ length: total }).map((_, i) => (
           <div
